@@ -32,11 +32,11 @@ export const login = async (req, res) => {
     //use lean to get plain javascript object to be able to delete password before sending obj to FE
     const user = await User.findOne({ email }).lean();
     if (!user) {
-      return res.status(400).json({ msg: "User does not exist." });
+      return res.status(400).json({ message: "User does not exist." });
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ msg: "Invalid credentials" });
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
