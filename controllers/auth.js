@@ -6,7 +6,11 @@ import User from "../models/User.js";
 export const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, role } = req.body;
-
+    const findUser = User.find({ email });
+    if (findUser) {
+      res.status(201).json({ message: "Email already exists" });
+      return
+    }
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
 
@@ -18,9 +22,10 @@ export const register = async (req, res) => {
       role,
     });
 
-    const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
+    await newUser.save();
+    res.status(201).json({ message: "User created succesfully" });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: err.message });
   }
 };
