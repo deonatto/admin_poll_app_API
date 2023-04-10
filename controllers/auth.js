@@ -6,8 +6,8 @@ import User from "../models/User.js";
 export const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, role } = req.body;
-    const findUser = User.find({ email });
-    if (findUser) {
+    const findUser = await User.find({ email });
+    if (findUser.length > 0) {
       res.status(201).json({ message: "Email already exists" });
       return
     }
@@ -25,8 +25,7 @@ export const register = async (req, res) => {
     await newUser.save();
     res.status(201).json({ message: "User created succesfully" });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -49,6 +48,6 @@ export const login = async (req, res) => {
 
     res.status(200).json({ token, user });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
