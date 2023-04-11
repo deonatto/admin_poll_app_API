@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createUser,
+  getAllUsers,
   updateUser,
   getUser,
   deleteUser,
@@ -12,6 +13,7 @@ const router = express.Router();
 /* CREATE, UPDATE AND DELETE USER ROUTES */
 
 router.post("", verifyToken, createUser);
+router.get("/", verifyToken, getAllUsers);
 router.get("/:id", verifyToken, getUser);
 router.put("/:id", verifyToken, updateUser);
 router.delete("/:id", verifyToken, deleteUser);
