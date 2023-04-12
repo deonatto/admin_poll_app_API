@@ -39,9 +39,7 @@ export const getAllUsers = async (req, res) => {
     //equivalent to: WHERE "" like "" in sql;
     const users = await User.find(
       {
-        $or: [
-          { email: { $regex: new RegExp(search, "i") } },
-        ],
+        $or: [{ email: { $regex: new RegExp(search, "i") } }],
       },
       { password: 0 } // Exclude the password field
     )
@@ -55,7 +53,7 @@ export const getAllUsers = async (req, res) => {
     });
     res.status(200).json({
       users,
-      total
+      total,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -65,10 +63,15 @@ export const getAllUsers = async (req, res) => {
 export const getUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(id);
+    const user = await User.findById(id, {
+      password: 0,
+      createdAt: 0,
+      updatedAt: 0,
+      __v: 0,
+    });
     res.status(200).json(user);
   } catch (err) {
-    res.status(404).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
