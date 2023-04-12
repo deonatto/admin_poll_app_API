@@ -37,21 +37,26 @@ export const getAllUsers = async (req, res) => {
     //find users that matches at least one of the conditions
     //The regex operator is used to search for specific strings in the collection, this would be
     //equivalent to: WHERE "" like "" in sql;
-    const users = await User.find({
-      $or: [
-        { cost: { $regex: new RegExp(search, "i") } },
-        { userId: { $regex: new RegExp(search, "i") } },
-      ],
-    })
+    const users = await User.find(
+      {
+        $or: [
+          { email: { $regex: new RegExp(search, "i") } },
+        ],
+      },
+      { password: 0 } // Exclude the password field
+    )
       .sort(sortFormatted)
       .skip(page * pageSize)
       .limit(pageSize);
-    console.log(users);
-    /*
+    //get total of documents in DB
+    //i option perform a case-insensitive match
+    const total = await User.countDocuments({
+      email: { $regex: search, $options: "i" },
+    });
     res.status(200).json({
       users,
+      total
     });
-    */
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
