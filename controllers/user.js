@@ -68,6 +68,7 @@ export const getUser = async (req, res) => {
       createdAt: 0,
       updatedAt: 0,
       __v: 0,
+      _id: 0,
     });
     res.status(200).json(user);
   } catch (err) {
@@ -75,7 +76,35 @@ export const getUser = async (req, res) => {
   }
 };
 
-export const updateUser = async (req, res) => {};
+export const updateUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { password, ...rest } = req.body;
+    // Sanitize request data
+    const user = { ...rest };
+    if (password) {
+      const salt = await bcrypt.genSalt();
+      const passwordHash = await bcrypt.hash(password, salt);
+      user.password = passwordHash;
+    }
+    // Update the user in the database
+    const updatedUser = await User.findByIdAndUpdate(userId, user, {
+      new: true,
+    });
+
+    // Check if the user was found and updated successfully
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Send the updated user as a response
+    res
+      .status(200)
+      .json({ user: updatedUser, message: "User updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 export const deleteUser = async (req, res) => {
   try {
