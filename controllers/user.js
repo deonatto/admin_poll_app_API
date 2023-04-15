@@ -63,13 +63,9 @@ export const getAllUsers = async (req, res) => {
 export const getUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(id, {
-      password: 0,
-      createdAt: 0,
-      updatedAt: 0,
-      __v: 0,
-      _id: 0,
-    });
+    const user = await User.findById(id).select(
+      "-password -createdAt -updatedAt -__v -_id"
+    );
     res.status(200).json(user);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -90,8 +86,7 @@ export const updateUser = async (req, res) => {
     // Update the user in the database
     const updatedUser = await User.findByIdAndUpdate(userId, user, {
       new: true,
-    });
-
+    }).select("-password -createdAt -updatedAt -__v -_id");
     // Check if the user was found and updated successfully
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
@@ -102,7 +97,7 @@ export const updateUser = async (req, res) => {
       .status(200)
       .json({ user: updatedUser, message: "User updated successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -112,6 +107,6 @@ export const deleteUser = async (req, res) => {
     await User.findByIdAndDelete(id);
     res.status(201).json({ message: "User deleted succesfully" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
