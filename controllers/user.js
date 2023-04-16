@@ -29,7 +29,6 @@ export const createUser = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    //sort sent by MUI should look like this: {"field": "userId", "sort": "desc"}
     const { page = 1, pageSize = 20, sortField, sort, search = "" } = req.query;
     const sortFormatted = sort
       ? { [sortField]: sort === "asc" ? 1 : -1 }
