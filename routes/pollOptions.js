@@ -1,12 +1,7 @@
 import express from "express";
 import {
-  createPoll,
-  getAllPolls,
-  getPoll,
-  updatePoll,
-  deletePoll,
-  getPolls
-} from "../controllers/poll.js";
+ 
+} from "../controllers/pollOptions.js";
 import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();

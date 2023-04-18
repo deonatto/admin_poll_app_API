@@ -51,6 +51,15 @@ export const getAllPolls = async (req, res) => {
   }
 };
 
+export const getPolls = async (req, res) =>{
+  try {
+    const polls = await Poll.find().select("-createdAt -updatedAt -__v -description");
+    res.status(200).json(polls);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
 export const getPoll = async (req, res) => {
   try {
     const { id } = req.params;
