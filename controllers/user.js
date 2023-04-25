@@ -4,14 +4,19 @@ import bcrypt from "bcrypt";
 export const createUser = async (req, res) => {
   try {
     const { firstName, lastName, email, password, role } = req.body;
+
+    // Check if user with the given email already exists
     const findUser = await User.find({ email });
     if (findUser.length > 0) {
       res.status(201).json({ message: "Email already exists" });
       return;
     }
+
+    // Generate salt and hash the password
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
 
+    // Create a new user object and save to the database
     const newUser = new User({
       firstName,
       lastName,
@@ -62,6 +67,7 @@ export const getAllUsers = async (req, res) => {
 export const getUser = async (req, res) => {
   try {
     const { id } = req.params;
+    // Find a user by their ID and exclude sensitive fields
     const user = await User.findById(id).select(
       "-password -createdAt -updatedAt -__v -_id"
     );
@@ -75,17 +81,19 @@ export const updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
     const { password, ...rest } = req.body;
-    // Sanitize request data
     const user = { ...rest };
+
     if (password) {
       const salt = await bcrypt.genSalt();
       const passwordHash = await bcrypt.hash(password, salt);
       user.password = passwordHash;
     }
+
     // Update the user in the database
     const updatedUser = await User.findByIdAndUpdate(userId, user, {
       new: true,
     }).select("-password -createdAt -updatedAt -__v -_id");
+
     // Check if the user was found and updated successfully
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
@@ -103,22 +111,32 @@ export const updateUser = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { password, ...rest } = req.body;
-    // Sanitize request data
-    const user = { ...rest };
-    if (password) {
+    const { newPassword, password, ...rest } = req.body;
+    let newCredentials = { ...rest };
+
+    //use lean to get plain javascript object
+    const user = await User.findById(userId).lean();
+    if (!user) {
+      return res.status(400).json({ message: "User does not exist." });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    if (newPassword) {
       const salt = await bcrypt.genSalt();
-      const passwordHash = await bcrypt.hash(password, salt);
-      user.password = passwordHash;
+      const passwordHash = await bcrypt.hash(newPassword, salt);
+      newCredentials = { ...newCredentials, password: passwordHash };
     }
     // Update the user in the database
-    const updatedUser = await User.findByIdAndUpdate(userId, user, {
-      new: true,
-    }).select("-password -createdAt -updatedAt -__v");
-    // Check if the user was found and updated successfully
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      newCredentials,
+      {
+        new: true,
+      }
+    ).select("-password -createdAt -updatedAt -__v");
 
     // Send the updated user as a response
     res
@@ -132,6 +150,7 @@ export const updateProfile = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
+    //find and delete user
     await User.findByIdAndDelete(id);
     res.status(201).json({ message: "User deleted succesfully" });
   } catch (err) {
