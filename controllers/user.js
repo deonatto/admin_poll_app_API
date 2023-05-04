@@ -16,7 +16,7 @@ export const createUser = async (req, res) => {
     const salt = await bcrypt.genSalt();
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // Create a new user object and save to the database
+    // Creating a new user object and saving it to the database
     const newUser = new User({
       firstName,
       lastName,
@@ -34,13 +34,16 @@ export const createUser = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
+    // Extracting pagination, sorting, and search parameters from the query string
     const { page = 1, pageSize = 20, sortField, sort, search = "" } = req.query;
     const sortFormatted = sort
       ? { [sortField]: sort === "asc" ? 1 : -1 }
       : null;
-    //find users that matches at least one of the conditions
-    //The regex operator is used to search for specific strings in the collection, this would be
-    //equivalent to: WHERE "" like "" in sql;
+
+    /*find users that matches at least one of the conditions
+      The regex operator is used to search for specific strings in the collection, this would be
+      equivalent to: WHERE "" like "" in sql;
+    */
     const users = await User.find(
       {
         $or: [{ email: { $regex: new RegExp(search, "i") } }],
@@ -82,7 +85,8 @@ export const updateUser = async (req, res) => {
     const userId = req.params.id;
     const { password, ...rest } = req.body;
     const user = { ...rest };
-
+    
+    // Hash the user's new password, if provided
     if (password) {
       const salt = await bcrypt.genSalt();
       const passwordHash = await bcrypt.hash(password, salt);

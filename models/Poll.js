@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// Define the Poll schema
 const PollSchema = new mongoose.Schema(
   {
     name: {
